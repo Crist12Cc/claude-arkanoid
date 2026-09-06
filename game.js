@@ -243,7 +243,20 @@ function launchAttachedBalls() {
   } );
 }
 
+function togglePause() {
+  if ( gameState === 'PLAYING' ) {
+    gameState = 'PAUSED';
+  } else if ( gameState === 'PAUSED' ) {
+    gameState = 'PLAYING';
+  }
+}
+
 function handleKeyDown( e ) {
+  if ( e.key === 'p' || e.key === 'P' || e.key === 'Escape' ) {
+    togglePause();
+    return;
+  }
+
   if ( e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' ) keysPressed.left = true;
   if ( e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' ) keysPressed.right = true;
 
