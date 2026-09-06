@@ -1,6 +1,6 @@
 # 02 — Audio de efectos (rebote y rotura de bloques)
 
-**Estado:** Approved
+**Estado:** Implementado
 **Depende de:** SPEC 01
 **Fecha:** 2026-09-06
 **Objetivo:** Añadir sonido de rebote y de rotura de bloques al juego, con un control simple de mute persistido entre sesiones.
