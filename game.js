@@ -408,7 +408,7 @@ function updateBalls() {
     }
 
     const withinPaddleX = ball.x + ball.radius >= paddle.x && ball.x - ball.radius <= paddle.x + paddle.width;
-    const withinPaddleY = ball.y + ball.radius >= paddle.y && ball.y + ball.radius <= paddle.y + paddle.height;
+const withinPaddleY = ball.y + ball.radius >= paddle.y && ball.y - ball.radius <= paddle.y + paddle.height;
     if ( ball.dy > 0 && withinPaddleX && withinPaddleY ) {
       bounceBallOffPaddle( ball );
     }
