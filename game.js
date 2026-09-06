@@ -498,6 +498,8 @@ function updateHud() {
 
 function updateMuteButton() {
   hudMuteEl.textContent = audio.muted ? '🔇' : '🔊';
+  hudMuteEl.setAttribute( 'aria-pressed', String( audio.muted ) );
+  hudMuteEl.setAttribute( 'aria-label', audio.muted ? 'Activar audio' : 'Silenciar audio' );
 }
 
 function toggleMute() {
