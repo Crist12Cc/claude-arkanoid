@@ -20,7 +20,8 @@ function playSound( sound ) {
   if ( audio.muted || !sound ) return;
   try {
     const instance = sound.cloneNode();
-    instance.play();
+    const playPromise = instance.play();
+    if ( playPromise && typeof playPromise.catch === 'function' ) playPromise.catch( () => {} );
   } catch ( e ) {
     // Reproducción bloqueada o no disponible; se ignora silenciosamente.
   }
