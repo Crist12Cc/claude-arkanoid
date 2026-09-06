@@ -3,13 +3,21 @@ const CANVAS_HEIGHT = 640;
 const BEST_SCORE_KEY = 'arkanoid_best_score';
 const MUTED_KEY = 'arkanoid_muted';
 
-const bounceSound = new Audio( 'assets/sounds/ball-bounce.mp3' );
-const breakSound = new Audio( 'assets/sounds/break-sound.mp3' );
+function loadSound( path ) {
+  try {
+    return new Audio( path );
+  } catch ( e ) {
+    return null;
+  }
+}
+
+const bounceSound = loadSound( 'assets/sounds/ball-bounce.mp3' );
+const breakSound = loadSound( 'assets/sounds/break-sound.mp3' );
 
 const audio = { muted: false };
 
 function playSound( sound ) {
-  if ( audio.muted ) return;
+  if ( audio.muted || !sound ) return;
   try {
     const instance = sound.cloneNode();
     instance.play();
