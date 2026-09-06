@@ -39,6 +39,7 @@ let gameState = 'START';
 let score = 0;
 let lives = 3;
 let bestScore = 0;
+let currentLevel = 0;
 
 const PADDLE_WIDTH = 80;
 const PADDLE_HEIGHT = 14;
@@ -226,7 +227,7 @@ function createBlocks( levelGrid ) {
   return created;
 }
 
-let blocks = createBlocks( LEVELS[ 0 ] );
+let blocks = createBlocks( LEVELS[ currentLevel ] );
 
 function drawBlocks() {
   blocks.forEach( ( block ) => {
@@ -315,7 +316,7 @@ function togglePause() {
 }
 
 function resetGame() {
-  blocks = createBlocks( LEVELS[ 0 ] );
+  blocks = createBlocks( LEVELS[ currentLevel ] );
   balls.length = 0;
   balls.push( createAttachedBall() );
   explosions.length = 0;
