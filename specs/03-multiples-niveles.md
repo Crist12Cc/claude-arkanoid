@@ -1,6 +1,6 @@
 # 03 — Múltiples niveles
 
-**Estado:** Draft
+**Estado:** Approved
 **Depende de:** SPEC 01
 **Fecha:** 2026-09-06
 **Objetivo:** Añadir dos niveles adicionales (total 3) con distintas grillas de bloques, avanzando automáticamente entre ellos y mostrando `VICTORY` solo al completar el último.
