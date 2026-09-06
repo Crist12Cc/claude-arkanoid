@@ -462,12 +462,27 @@ function drawVictoryScreen() {
   ctx.fillText( `Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20 );
 }
 
+function checkVictory() {
+  const allDestroyed = blocks.every( ( block ) => block.destroyed );
+  if ( allDestroyed ) {
+    gameState = 'VICTORY';
+    if ( score > bestScore ) {
+      bestScore = score;
+      saveBestScore( bestScore );
+    }
+  }
+}
+
 function update( dt ) {
   if ( gameState === 'PLAYING' ) {
     updatePaddle();
     updateBalls();
     updateExplosions();
     updatePowerUps();
+
+    if ( gameState === 'PLAYING' ) {
+      checkVictory();
+    }
   }
 }
 
