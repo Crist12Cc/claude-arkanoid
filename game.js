@@ -1,6 +1,7 @@
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 640;
 const BEST_SCORE_KEY = 'arkanoid_best_score';
+const MUTED_KEY = 'arkanoid_muted';
 
 const bounceSound = new Audio( 'assets/sounds/ball-bounce.mp3' );
 const breakSound = new Audio( 'assets/sounds/break-sound.mp3' );
@@ -456,6 +457,22 @@ function saveBestScore( value ) {
   }
 }
 
+function loadMuted() {
+  try {
+    return localStorage.getItem( MUTED_KEY ) === 'true';
+  } catch ( e ) {
+    return false;
+  }
+}
+
+function saveMuted( value ) {
+  try {
+    localStorage.setItem( MUTED_KEY, String( value ) );
+  } catch ( e ) {
+    // localStorage no disponible; se ignora silenciosamente.
+  }
+}
+
 function updateHud() {
   hudScoreEl.textContent = `Score: ${score}`;
   hudLivesEl.textContent = `Vidas: ${lives}`;
@@ -582,6 +599,7 @@ function loop( timestamp ) {
 
 function init() {
   bestScore = loadBestScore();
+  audio.muted = loadMuted();
   score = 0;
   lives = 3;
   gameState = 'START';
