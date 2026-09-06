@@ -71,6 +71,7 @@ function createBlocks() {
         height: BLOCK_HEIGHT,
         color,
         hitsRemaining: hits,
+        points: POINTS_BY_HITS[ hits ],
         destroyed: false,
       } );
     }
@@ -85,6 +86,49 @@ function drawBlocks() {
     if ( block.destroyed ) return;
     drawSprite( ctx, `block_${block.color}`, block.x, block.y, block.width, block.height );
   } );
+}
+
+const explosions = [];
+
+function spawnExplosion( block ) {
+  explosions.push( {
+    color: block.color,
+    x: block.x,
+    y: block.y,
+    width: block.width,
+    height: block.height,
+    startTime: performance.now(),
+  } );
+}
+
+function updateExplosions() {
+  const now = performance.now();
+  for ( let i = explosions.length - 1; i >= 0; i-- ) {
+    const frames = EXPLOSION_FRAMES[ explosions[ i ].color ];
+    const totalDuration = frames.length * EXPLOSION_DURATION;
+    if ( now - explosions[ i ].startTime >= totalDuration ) {
+      explosions.splice( i, 1 );
+    }
+  }
+}
+
+function drawExplosions() {
+  const now = performance.now();
+  explosions.forEach( ( explosion ) => {
+    const frames = EXPLOSION_FRAMES[ explosion.color ];
+    const elapsed = now - explosion.startTime;
+    const frameIndex = Math.min( frames.length - 1, Math.floor( elapsed / EXPLOSION_DURATION ) );
+    drawFrame( ctx, frames[ frameIndex ], explosion.x, explosion.y, explosion.width, explosion.height );
+  } );
+}
+
+function hitBlock( block ) {
+  block.hitsRemaining -= 1;
+  if ( block.hitsRemaining <= 0 ) {
+    block.destroyed = true;
+    spawnExplosion( block );
+    score += block.points;
+  }
 }
 
 const BALL_RADIUS = 8;
@@ -170,6 +214,31 @@ function bounceBallOffPaddle( ball ) {
   ball.y = paddle.y - ball.radius;
 }
 
+function checkBallBlockCollision( ball ) {
+  for ( const block of blocks ) {
+    if ( block.destroyed ) continue;
+
+    const closestX = Math.max( block.x, Math.min( ball.x, block.x + block.width ) );
+    const closestY = Math.max( block.y, Math.min( ball.y, block.y + block.height ) );
+    const dx = ball.x - closestX;
+    const dy = ball.y - closestY;
+
+    if ( ( dx * dx + dy * dy ) > ball.radius * ball.radius ) continue;
+
+    const overlapX = ball.radius - Math.abs( dx );
+    const overlapY = ball.radius - Math.abs( dy );
+
+    if ( overlapX < overlapY ) {
+      ball.dx = dx < 0 ? -Math.abs( ball.dx ) : Math.abs( ball.dx );
+    } else {
+      ball.dy = dy < 0 ? -Math.abs( ball.dy ) : Math.abs( ball.dy );
+    }
+
+    hitBlock( block );
+    break;
+  }
+}
+
 function loseLife() {
   lives -= 1;
   balls.length = 0;
@@ -205,6 +274,8 @@ function updateBalls() {
     if ( ball.dy > 0 && withinPaddleX && withinPaddleY ) {
       bounceBallOffPaddle( ball );
     }
+
+    checkBallBlockCollision( ball );
   } );
 
   const allFallen = balls.every( ( ball ) => !ball.attached && ball.y - ball.radius > CANVAS_HEIGHT );
@@ -260,6 +331,7 @@ function drawPlayingPlaceholder() {
   balls.forEach( ( ball ) => {
     drawSprite( ctx, 'ball', ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2 );
   } );
+  drawExplosions();
 }
 
 function drawPausedOverlay() {
@@ -297,7 +369,7 @@ function update( dt ) {
   if ( gameState === 'PLAYING' ) {
     updatePaddle();
     updateBalls();
-    // La lógica de bloques se agrega en pasos siguientes.
+    updateExplosions();
   }
 }
 
