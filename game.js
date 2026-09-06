@@ -157,24 +157,40 @@ const BLOCK_GAP = 4;
 const BLOCK_MARGIN_X = ( CANVAS_WIDTH - ( BLOCK_COLS * BLOCK_WIDTH + ( BLOCK_COLS - 1 ) * BLOCK_GAP ) ) / 2;
 const BLOCK_MARGIN_TOP = 60;
 
-// Fila -> { hits, color }, según el mapeo de resistencia por color del spec.
-const BLOCK_ROW_CONFIG = [
-  { hits: 3, color: 'red' },
-  { hits: 3, color: 'hotpink' },
-  { hits: 2, color: 'yellow' },
-  { hits: 2, color: 'magenta' },
-  { hits: 1, color: 'gray' },
-  { hits: 1, color: 'cyan' },
-  { hits: 1, color: 'green' },
-];
+// Resistencia (hits) por color, según el mapeo del spec.
+const HITS_BY_COLOR = {
+  red: 3,
+  hotpink: 3,
+  yellow: 2,
+  magenta: 2,
+  gray: 1,
+  cyan: 1,
+  green: 1,
+};
 
 const POINTS_BY_HITS = { 1: 10, 2: 20, 3: 30 };
 
-function createBlocks() {
+// LEVELS: array de grillas 7x10. Cada celda es null (sin bloque) o un color válido.
+const LEVELS = [
+  // Nivel 1 (grilla original del spec 01: una fila por color, sin huecos).
+  [
+    Array( BLOCK_COLS ).fill( 'red' ),
+    Array( BLOCK_COLS ).fill( 'hotpink' ),
+    Array( BLOCK_COLS ).fill( 'yellow' ),
+    Array( BLOCK_COLS ).fill( 'magenta' ),
+    Array( BLOCK_COLS ).fill( 'gray' ),
+    Array( BLOCK_COLS ).fill( 'cyan' ),
+    Array( BLOCK_COLS ).fill( 'green' ),
+  ],
+];
+
+function createBlocks( levelGrid ) {
   const created = [];
   for ( let row = 0; row < BLOCK_ROWS; row++ ) {
-    const { hits, color } = BLOCK_ROW_CONFIG[ row ];
     for ( let col = 0; col < BLOCK_COLS; col++ ) {
+      const color = levelGrid[ row ][ col ];
+      if ( color === null ) continue;
+      const hits = HITS_BY_COLOR[ color ];
       created.push( {
         x: BLOCK_MARGIN_X + col * ( BLOCK_WIDTH + BLOCK_GAP ),
         y: BLOCK_MARGIN_TOP + row * ( BLOCK_HEIGHT + BLOCK_GAP ),
@@ -190,7 +206,7 @@ function createBlocks() {
   return created;
 }
 
-let blocks = createBlocks();
+let blocks = createBlocks( LEVELS[ 0 ] );
 
 function drawBlocks() {
   blocks.forEach( ( block ) => {
@@ -279,7 +295,7 @@ function togglePause() {
 }
 
 function resetGame() {
-  blocks = createBlocks();
+  blocks = createBlocks( LEVELS[ 0 ] );
   balls.length = 0;
   balls.push( createAttachedBall() );
   explosions.length = 0;
