@@ -38,6 +38,91 @@ function clampPaddleX( x ) {
   return Math.max( 0, Math.min( CANVAS_WIDTH - paddle.width, x ) );
 }
 
+const POWERUP_DROP_CHANCE = 0.2;
+const POWERUP_SIZE = 20;
+const POWERUP_SPEED = 2;
+const POWERUP_EFFECT_DURATION = 10000; // 10s
+const BIG_PADDLE_WIDTH = PADDLE_WIDTH * 1.6;
+
+const POWERUP_STYLES = {
+  multiball: { fill: '#3aa1ff', label: 'M' },
+  bigpaddle: { fill: '#ffb03a', label: 'B' },
+};
+
+const powerUps = [];
+const activeEffects = { bigPaddleUntil: null };
+
+function spawnPowerUp( block ) {
+  if ( Math.random() >= POWERUP_DROP_CHANCE ) return;
+  const type = Math.random() < 0.5 ? 'multiball' : 'bigpaddle';
+  powerUps.push( {
+    x: block.x + block.width / 2 - POWERUP_SIZE / 2,
+    y: block.y + block.height / 2 - POWERUP_SIZE / 2,
+    type,
+    active: true,
+  } );
+}
+
+function applyPowerUp( type ) {
+  if ( type === 'bigpaddle' ) {
+    paddle.width = BIG_PADDLE_WIDTH;
+    paddle.x = clampPaddleX( paddle.x );
+    activeEffects.bigPaddleUntil = performance.now() + POWERUP_EFFECT_DURATION;
+  } else if ( type === 'multiball' ) {
+    const reference = balls.find( ( ball ) => !ball.attached ) || balls[ 0 ];
+    const speed = Math.hypot( reference.dx, reference.dy ) || BALL_SPEED;
+    [ -0.4, 0.4 ].forEach( ( angleOffset ) => {
+      balls.push( {
+        x: reference.x,
+        y: reference.y,
+        dx: speed * Math.sin( angleOffset ),
+        dy: -Math.abs( speed * Math.cos( angleOffset ) ),
+        radius: BALL_RADIUS,
+        attached: false,
+      } );
+    } );
+  }
+}
+
+function updatePowerUpEffects() {
+  if ( activeEffects.bigPaddleUntil !== null && performance.now() >= activeEffects.bigPaddleUntil ) {
+    paddle.width = PADDLE_WIDTH;
+    paddle.x = clampPaddleX( paddle.x );
+    activeEffects.bigPaddleUntil = null;
+  }
+}
+
+function updatePowerUps() {
+  for ( let i = powerUps.length - 1; i >= 0; i-- ) {
+    const powerUp = powerUps[ i ];
+    powerUp.y += POWERUP_SPEED;
+
+    const withinPaddleX = powerUp.x + POWERUP_SIZE >= paddle.x && powerUp.x <= paddle.x + paddle.width;
+    const withinPaddleY = powerUp.y + POWERUP_SIZE >= paddle.y && powerUp.y <= paddle.y + paddle.height;
+
+    if ( withinPaddleX && withinPaddleY ) {
+      applyPowerUp( powerUp.type );
+      powerUps.splice( i, 1 );
+    } else if ( powerUp.y > CANVAS_HEIGHT ) {
+      powerUps.splice( i, 1 );
+    }
+  }
+
+  updatePowerUpEffects();
+}
+
+function drawPowerUps() {
+  powerUps.forEach( ( powerUp ) => {
+    const style = POWERUP_STYLES[ powerUp.type ];
+    ctx.fillStyle = style.fill;
+    ctx.fillRect( powerUp.x, powerUp.y, POWERUP_SIZE, POWERUP_SIZE );
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 14px monospace';
+    ctx.fillText( style.label, powerUp.x + POWERUP_SIZE / 2, powerUp.y + POWERUP_SIZE / 2 + 5 );
+  } );
+}
+
 const BLOCK_COLS = 10;
 const BLOCK_ROWS = 7;
 const BLOCK_WIDTH = 44;
@@ -127,6 +212,7 @@ function hitBlock( block ) {
   if ( block.hitsRemaining <= 0 ) {
     block.destroyed = true;
     spawnExplosion( block );
+    spawnPowerUp( block );
     score += block.points;
   }
 }
@@ -332,6 +418,7 @@ function drawPlayingPlaceholder() {
     drawSprite( ctx, 'ball', ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2 );
   } );
   drawExplosions();
+  drawPowerUps();
 }
 
 function drawPausedOverlay() {
@@ -370,6 +457,7 @@ function update( dt ) {
     updatePaddle();
     updateBalls();
     updateExplosions();
+    updatePowerUps();
   }
 }
 
