@@ -608,14 +608,27 @@ function drawVictoryScreen() {
   ctx.fillText( 'Presiona una tecla o haz click para reiniciar', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50 );
 }
 
+function advanceLevel() {
+  currentLevel += 1;
+  blocks = createBlocks( LEVELS[ currentLevel ] );
+  powerUps.length = 0;
+  balls.length = 0;
+  balls.push( createAttachedBall() );
+}
+
 function checkVictory() {
   const allDestroyed = blocks.every( ( block ) => block.destroyed );
-  if ( allDestroyed ) {
-    gameState = 'VICTORY';
-    if ( score > bestScore ) {
-      bestScore = score;
-      saveBestScore( bestScore );
-    }
+  if ( !allDestroyed ) return;
+
+  if ( currentLevel < LEVELS.length - 1 ) {
+    advanceLevel();
+    return;
+  }
+
+  gameState = 'VICTORY';
+  if ( score > bestScore ) {
+    bestScore = score;
+    saveBestScore( bestScore );
   }
 }
 
