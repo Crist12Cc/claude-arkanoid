@@ -357,6 +357,8 @@ function bounceBallOffPaddle( ball ) {
   ball.dx = speed * Math.sin( angle );
   ball.dy = -Math.abs( speed * Math.cos( angle ) );
   ball.y = paddle.y - ball.radius;
+
+  playSound( bounceSound );
 }
 
 function checkBallBlockCollision( ball ) {
@@ -379,6 +381,7 @@ function checkBallBlockCollision( ball ) {
       ball.dy = dy < 0 ? -Math.abs( ball.dy ) : Math.abs( ball.dy );
     }
 
+    playSound( bounceSound );
     hitBlock( block );
     break;
   }
@@ -414,14 +417,17 @@ function updateBalls() {
     if ( ball.x - ball.radius <= 0 ) {
       ball.x = ball.radius;
       ball.dx = Math.abs( ball.dx );
+      playSound( bounceSound );
     } else if ( ball.x + ball.radius >= CANVAS_WIDTH ) {
       ball.x = CANVAS_WIDTH - ball.radius;
       ball.dx = -Math.abs( ball.dx );
+      playSound( bounceSound );
     }
 
     if ( ball.y - ball.radius <= 0 ) {
       ball.y = ball.radius;
       ball.dy = Math.abs( ball.dy );
+      playSound( bounceSound );
     }
 
     const withinPaddleX = ball.x + ball.radius >= paddle.x && ball.x - ball.radius <= paddle.x + paddle.width;
