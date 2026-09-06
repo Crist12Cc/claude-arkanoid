@@ -2,6 +2,9 @@ const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 640;
 const BEST_SCORE_KEY = 'arkanoid_best_score';
 
+const bounceSound = new Audio( 'assets/sounds/ball-bounce.mp3' );
+const breakSound = new Audio( 'assets/sounds/break-sound.mp3' );
+
 const canvas = document.getElementById( 'game-canvas' );
 const ctx = canvas.getContext( '2d' );
 
