@@ -5,6 +5,18 @@ const BEST_SCORE_KEY = 'arkanoid_best_score';
 const bounceSound = new Audio( 'assets/sounds/ball-bounce.mp3' );
 const breakSound = new Audio( 'assets/sounds/break-sound.mp3' );
 
+const audio = { muted: false };
+
+function playSound( sound ) {
+  if ( audio.muted ) return;
+  try {
+    const instance = sound.cloneNode();
+    instance.play();
+  } catch ( e ) {
+    // Reproducción bloqueada o no disponible; se ignora silenciosamente.
+  }
+}
+
 const canvas = document.getElementById( 'game-canvas' );
 const ctx = canvas.getContext( '2d' );
 
