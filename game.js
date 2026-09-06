@@ -614,6 +614,7 @@ function drawVictoryScreen() {
 function advanceLevel() {
   currentLevel += 1;
   blocks = createBlocks( LEVELS[ currentLevel ] );
+  explosions.length = 0;
   powerUps.length = 0;
   balls.length = 0;
   balls.push( createAttachedBall() );
