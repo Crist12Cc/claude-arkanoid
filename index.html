@@ -35,6 +35,16 @@
     background: #000;
     border: 2px solid #444;
   }
+
+  #hud-mute {
+    background: none;
+    border: 1px solid #444;
+    color: #eee;
+    font-family: monospace, sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 8px;
+  }
 </style>
 </head>
 <body>
@@ -44,6 +54,7 @@
       <span id="hud-score">Score: 0</span>
       <span id="hud-lives">Vidas: 3</span>
       <span id="hud-best">Best: 0</span>
+      <button id="hud-mute">🔊</button>
     </div>
     <canvas id="game-canvas" width="480" height="640"></canvas>
   </div>

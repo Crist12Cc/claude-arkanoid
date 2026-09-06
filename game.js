@@ -24,6 +24,7 @@ const ctx = canvas.getContext( '2d' );
 const hudScoreEl = document.getElementById( 'hud-score' );
 const hudLivesEl = document.getElementById( 'hud-lives' );
 const hudBestEl = document.getElementById( 'hud-best' );
+const hudMuteEl = document.getElementById( 'hud-mute' );
 
 let gameState = 'START';
 let score = 0;
@@ -486,6 +487,18 @@ function updateHud() {
   hudBestEl.textContent = `Best: ${bestScore}`;
 }
 
+function updateMuteButton() {
+  hudMuteEl.textContent = audio.muted ? '🔇' : '🔊';
+}
+
+function toggleMute() {
+  audio.muted = !audio.muted;
+  updateMuteButton();
+  saveMuted( audio.muted );
+}
+
+hudMuteEl.addEventListener( 'click', toggleMute );
+
 function drawStartScreen() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT );
@@ -607,6 +620,7 @@ function loop( timestamp ) {
 function init() {
   bestScore = loadBestScore();
   audio.muted = loadMuted();
+  updateMuteButton();
   score = 0;
   lives = 3;
   gameState = 'START';
