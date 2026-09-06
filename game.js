@@ -30,6 +30,7 @@ function playSound( sound ) {
 const canvas = document.getElementById( 'game-canvas' );
 const ctx = canvas.getContext( '2d' );
 
+const hudLevelEl = document.getElementById( 'hud-level' );
 const hudScoreEl = document.getElementById( 'hud-score' );
 const hudLivesEl = document.getElementById( 'hud-lives' );
 const hudBestEl = document.getElementById( 'hud-best' );
@@ -529,6 +530,7 @@ function saveMuted( value ) {
 }
 
 function updateHud() {
+  hudLevelEl.textContent = `Nivel ${currentLevel + 1}`;
   hudScoreEl.textContent = `Score: ${score}`;
   hudLivesEl.textContent = `Vidas: ${lives}`;
   hudBestEl.textContent = `Best: ${bestScore}`;
