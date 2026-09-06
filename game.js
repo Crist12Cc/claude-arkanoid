@@ -328,6 +328,16 @@ function checkBallBlockCollision( ball ) {
 function loseLife() {
   lives -= 1;
   balls.length = 0;
+
+  if ( lives <= 0 ) {
+    gameState = 'GAME_OVER';
+    if ( score > bestScore ) {
+      bestScore = score;
+      saveBestScore( bestScore );
+    }
+    return;
+  }
+
   balls.push( createAttachedBall() );
 }
 
