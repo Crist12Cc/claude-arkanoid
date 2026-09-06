@@ -1,6 +1,31 @@
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 640;
 const BEST_SCORE_KEY = 'arkanoid_best_score';
+const MUTED_KEY = 'arkanoid_muted';
+
+function loadSound( path ) {
+  try {
+    return new Audio( path );
+  } catch ( e ) {
+    return null;
+  }
+}
+
+const bounceSound = loadSound( 'assets/sounds/ball-bounce.mp3' );
+const breakSound = loadSound( 'assets/sounds/break-sound.mp3' );
+
+const audio = { muted: false };
+
+function playSound( sound ) {
+  if ( audio.muted || !sound ) return;
+  try {
+    const instance = sound.cloneNode();
+    const playPromise = instance.play();
+    if ( playPromise && typeof playPromise.catch === 'function' ) playPromise.catch( () => {} );
+  } catch ( e ) {
+    // Reproducción bloqueada o no disponible; se ignora silenciosamente.
+  }
+}
 
 const canvas = document.getElementById( 'game-canvas' );
 const ctx = canvas.getContext( '2d' );
@@ -8,6 +33,7 @@ const ctx = canvas.getContext( '2d' );
 const hudScoreEl = document.getElementById( 'hud-score' );
 const hudLivesEl = document.getElementById( 'hud-lives' );
 const hudBestEl = document.getElementById( 'hud-best' );
+const hudMuteEl = document.getElementById( 'hud-mute' );
 
 let gameState = 'START';
 let score = 0;
@@ -214,6 +240,7 @@ function hitBlock( block ) {
     spawnExplosion( block );
     spawnPowerUp( block );
     score += block.points;
+    playSound( breakSound );
   }
 }
 
@@ -341,6 +368,8 @@ function bounceBallOffPaddle( ball ) {
   ball.dx = speed * Math.sin( angle );
   ball.dy = -Math.abs( speed * Math.cos( angle ) );
   ball.y = paddle.y - ball.radius;
+
+  playSound( bounceSound );
 }
 
 function checkBallBlockCollision( ball ) {
@@ -363,6 +392,7 @@ function checkBallBlockCollision( ball ) {
       ball.dy = dy < 0 ? -Math.abs( ball.dy ) : Math.abs( ball.dy );
     }
 
+    playSound( bounceSound );
     hitBlock( block );
     break;
   }
@@ -398,14 +428,17 @@ function updateBalls() {
     if ( ball.x - ball.radius <= 0 ) {
       ball.x = ball.radius;
       ball.dx = Math.abs( ball.dx );
+      playSound( bounceSound );
     } else if ( ball.x + ball.radius >= CANVAS_WIDTH ) {
       ball.x = CANVAS_WIDTH - ball.radius;
       ball.dx = -Math.abs( ball.dx );
+      playSound( bounceSound );
     }
 
     if ( ball.y - ball.radius <= 0 ) {
       ball.y = ball.radius;
       ball.dy = Math.abs( ball.dy );
+      playSound( bounceSound );
     }
 
     const withinPaddleX = ball.x + ball.radius >= paddle.x && ball.x - ball.radius <= paddle.x + paddle.width;
@@ -441,11 +474,41 @@ function saveBestScore( value ) {
   }
 }
 
+function loadMuted() {
+  try {
+    return localStorage.getItem( MUTED_KEY ) === 'true';
+  } catch ( e ) {
+    return false;
+  }
+}
+
+function saveMuted( value ) {
+  try {
+    localStorage.setItem( MUTED_KEY, String( value ) );
+  } catch ( e ) {
+    // localStorage no disponible; se ignora silenciosamente.
+  }
+}
+
 function updateHud() {
   hudScoreEl.textContent = `Score: ${score}`;
   hudLivesEl.textContent = `Vidas: ${lives}`;
   hudBestEl.textContent = `Best: ${bestScore}`;
 }
+
+function updateMuteButton() {
+  hudMuteEl.textContent = audio.muted ? '🔇' : '🔊';
+  hudMuteEl.setAttribute( 'aria-pressed', String( audio.muted ) );
+  hudMuteEl.setAttribute( 'aria-label', audio.muted ? 'Activar audio' : 'Silenciar audio' );
+}
+
+function toggleMute() {
+  audio.muted = !audio.muted;
+  updateMuteButton();
+  saveMuted( audio.muted );
+}
+
+hudMuteEl.addEventListener( 'click', toggleMute );
 
 function drawStartScreen() {
   ctx.fillStyle = '#000';
@@ -567,6 +630,8 @@ function loop( timestamp ) {
 
 function init() {
   bestScore = loadBestScore();
+  audio.muted = loadMuted();
+  updateMuteButton();
   score = 0;
   lives = 3;
   gameState = 'START';
