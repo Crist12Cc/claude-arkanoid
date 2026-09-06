@@ -182,6 +182,26 @@ const LEVELS = [
     Array( BLOCK_COLS ).fill( 'cyan' ),
     Array( BLOCK_COLS ).fill( 'green' ),
   ],
+  // Nivel 2: patrón de diamante, simétrico, con huecos crecientes hacia los bordes.
+  [
+    [ null, null, null, null, 'cyan', 'cyan', null, null, null, null ],
+    [ null, null, null, 'green', 'green', 'green', 'green', null, null, null ],
+    [ null, null, 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', null, null ],
+    [ null, 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', null ],
+    [ null, null, 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', null, null ],
+    [ null, null, null, 'green', 'green', 'green', 'green', null, null, null ],
+    [ null, null, null, null, 'cyan', 'cyan', null, null, null, null ],
+  ],
+  // Nivel 3: filas sólidas alternadas con filas de huecos periódicos, mayor dificultad.
+  [
+    Array( BLOCK_COLS ).fill( 'red' ),
+    [ 'hotpink', 'hotpink', null, 'hotpink', 'hotpink', null, 'hotpink', 'hotpink', null, 'hotpink' ],
+    Array( BLOCK_COLS ).fill( 'yellow' ),
+    [ null, 'magenta', 'magenta', null, 'magenta', 'magenta', null, 'magenta', 'magenta', null ],
+    Array( BLOCK_COLS ).fill( 'gray' ),
+    [ 'cyan', null, 'cyan', null, 'cyan', null, 'cyan', null, 'cyan', null ],
+    Array( BLOCK_COLS ).fill( 'green' ),
+  ],
 ];
 
 function createBlocks( levelGrid ) {
