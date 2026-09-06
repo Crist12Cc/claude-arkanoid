@@ -30,6 +30,7 @@ function playSound( sound ) {
 const canvas = document.getElementById( 'game-canvas' );
 const ctx = canvas.getContext( '2d' );
 
+const hudLevelEl = document.getElementById( 'hud-level' );
 const hudScoreEl = document.getElementById( 'hud-score' );
 const hudLivesEl = document.getElementById( 'hud-lives' );
 const hudBestEl = document.getElementById( 'hud-best' );
@@ -39,6 +40,7 @@ let gameState = 'START';
 let score = 0;
 let lives = 3;
 let bestScore = 0;
+let currentLevel = 0;
 
 const PADDLE_WIDTH = 80;
 const PADDLE_HEIGHT = 14;
@@ -157,24 +159,61 @@ const BLOCK_GAP = 4;
 const BLOCK_MARGIN_X = ( CANVAS_WIDTH - ( BLOCK_COLS * BLOCK_WIDTH + ( BLOCK_COLS - 1 ) * BLOCK_GAP ) ) / 2;
 const BLOCK_MARGIN_TOP = 60;
 
-// Fila -> { hits, color }, según el mapeo de resistencia por color del spec.
-const BLOCK_ROW_CONFIG = [
-  { hits: 3, color: 'red' },
-  { hits: 3, color: 'hotpink' },
-  { hits: 2, color: 'yellow' },
-  { hits: 2, color: 'magenta' },
-  { hits: 1, color: 'gray' },
-  { hits: 1, color: 'cyan' },
-  { hits: 1, color: 'green' },
-];
+// Resistencia (hits) por color, según el mapeo del spec.
+const HITS_BY_COLOR = {
+  red: 3,
+  hotpink: 3,
+  yellow: 2,
+  magenta: 2,
+  gray: 1,
+  cyan: 1,
+  green: 1,
+};
 
 const POINTS_BY_HITS = { 1: 10, 2: 20, 3: 30 };
 
-function createBlocks() {
+// LEVELS: array de grillas 7x10. Cada celda es null (sin bloque) o un color válido.
+const LEVELS = [
+  // Nivel 1 (grilla original del spec 01: una fila por color, sin huecos).
+  [
+    Array( BLOCK_COLS ).fill( 'red' ),
+    Array( BLOCK_COLS ).fill( 'hotpink' ),
+    Array( BLOCK_COLS ).fill( 'yellow' ),
+    Array( BLOCK_COLS ).fill( 'magenta' ),
+    Array( BLOCK_COLS ).fill( 'gray' ),
+    Array( BLOCK_COLS ).fill( 'cyan' ),
+    Array( BLOCK_COLS ).fill( 'green' ),
+  ],
+  // Nivel 2: patrón de diamante, simétrico, con huecos crecientes hacia los bordes.
+  [
+    [ null, null, null, null, 'cyan', 'cyan', null, null, null, null ],
+    [ null, null, null, 'green', 'green', 'green', 'green', null, null, null ],
+    [ null, null, 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', null, null ],
+    [ null, 'red', 'red', 'red', 'red', 'red', 'red', 'red', 'red', null ],
+    [ null, null, 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', 'yellow', null, null ],
+    [ null, null, null, 'green', 'green', 'green', 'green', null, null, null ],
+    [ null, null, null, null, 'cyan', 'cyan', null, null, null, null ],
+  ],
+  // Nivel 3: filas sólidas alternadas con filas de huecos periódicos, mayor dificultad.
+  [
+    Array( BLOCK_COLS ).fill( 'red' ),
+    [ 'hotpink', 'hotpink', null, 'hotpink', 'hotpink', null, 'hotpink', 'hotpink', null, 'hotpink' ],
+    Array( BLOCK_COLS ).fill( 'yellow' ),
+    [ null, 'magenta', 'magenta', null, 'magenta', 'magenta', null, 'magenta', 'magenta', null ],
+    Array( BLOCK_COLS ).fill( 'gray' ),
+    [ 'cyan', null, 'cyan', null, 'cyan', null, 'cyan', null, 'cyan', null ],
+    Array( BLOCK_COLS ).fill( 'green' ),
+  ],
+];
+
+function createBlocks( levelGrid ) {
   const created = [];
   for ( let row = 0; row < BLOCK_ROWS; row++ ) {
-    const { hits, color } = BLOCK_ROW_CONFIG[ row ];
     for ( let col = 0; col < BLOCK_COLS; col++ ) {
+      const color = levelGrid[ row ]?.[ col ];
+      if ( color == null ) continue;
+      const hits = HITS_BY_COLOR[ color ];
+      if ( hits === undefined ) continue;
       created.push( {
         x: BLOCK_MARGIN_X + col * ( BLOCK_WIDTH + BLOCK_GAP ),
         y: BLOCK_MARGIN_TOP + row * ( BLOCK_HEIGHT + BLOCK_GAP ),
@@ -190,7 +229,7 @@ function createBlocks() {
   return created;
 }
 
-let blocks = createBlocks();
+let blocks = createBlocks( LEVELS[ currentLevel ] );
 
 function drawBlocks() {
   blocks.forEach( ( block ) => {
@@ -279,7 +318,8 @@ function togglePause() {
 }
 
 function resetGame() {
-  blocks = createBlocks();
+  currentLevel = 0;
+  blocks = createBlocks( LEVELS[ currentLevel ] );
   balls.length = 0;
   balls.push( createAttachedBall() );
   explosions.length = 0;
@@ -491,6 +531,7 @@ function saveMuted( value ) {
 }
 
 function updateHud() {
+  hudLevelEl.textContent = `Nivel ${currentLevel + 1}`;
   hudScoreEl.textContent = `Score: ${score}`;
   hudLivesEl.textContent = `Vidas: ${lives}`;
   hudBestEl.textContent = `Best: ${bestScore}`;
@@ -570,14 +611,28 @@ function drawVictoryScreen() {
   ctx.fillText( 'Presiona una tecla o haz click para reiniciar', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50 );
 }
 
+function advanceLevel() {
+  currentLevel += 1;
+  blocks = createBlocks( LEVELS[ currentLevel ] );
+  explosions.length = 0;
+  powerUps.length = 0;
+  balls.length = 0;
+  balls.push( createAttachedBall() );
+}
+
 function checkVictory() {
   const allDestroyed = blocks.every( ( block ) => block.destroyed );
-  if ( allDestroyed ) {
-    gameState = 'VICTORY';
-    if ( score > bestScore ) {
-      bestScore = score;
-      saveBestScore( bestScore );
-    }
+  if ( !allDestroyed ) return;
+
+  if ( currentLevel < LEVELS.length - 1 ) {
+    advanceLevel();
+    return;
+  }
+
+  gameState = 'VICTORY';
+  if ( score > bestScore ) {
+    bestScore = score;
+    saveBestScore( bestScore );
   }
 }
 
