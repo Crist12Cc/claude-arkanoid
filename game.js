@@ -275,6 +275,7 @@ function handleKeyDown( e ) {
     togglePause();
     return;
   }
+  if ( e.key === 'ArrowLeft' || e.key === 'ArrowRight' ) e.preventDefault();
 
   if ( e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' ) keysPressed.left = true;
   if ( e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' ) keysPressed.right = true;
