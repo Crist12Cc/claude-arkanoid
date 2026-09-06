@@ -1,6 +1,6 @@
 # 01 — MVP jugable de Arkanoid
 
-**Estado:** Draft
+**Estado:** Approved
 **Depende de:** Ninguno
 **Fecha:** 2026-09-06
 **Objetivo:** Construir un MVP jugable de Arkanoid en HTML/CSS/JS puro (sin dependencias) con un nivel fijo, vidas, power-ups básicos y controles de teclado y mouse.
@@ -8,6 +8,7 @@
 ## Alcance
 
 **Incluido:**
+
 - `index.html` como punto de entrada, con un `<canvas>` fijo de 480x640 (vertical).
 - Bucle de juego (game loop) con `requestAnimationFrame`.
 - Paleta controlable con teclado (flechas / A-D) y mouse (posición X).
@@ -25,9 +26,10 @@
   - `PLAYING` ↔ `PAUSED`: pausa/reanuda con tecla (ej. `P` o `Esc`).
   - `GAME_OVER`: al perder la última vida.
   - `VICTORY`: al destruir todos los bloques del nivel.
-- Reutilización de `assets/spritesheet.js` para todo el renderizado (paddle, ball, block_<color>, animación de explosión al destruir bloques).
+- Reutilización de `assets/spritesheet.js` para todo el renderizado (paddle, ball, block\_<color>, animación de explosión al destruir bloques).
 
 **Fuera de alcance (no incluido en este MVP):**
+
 - Múltiples niveles o progresión entre niveles.
 - Sonido (`ball-bounce.mp3`, `break-sound.mp3` no se wirean en este spec — spec futuro de audio).
 - Power-up de bola lenta u otros efectos adicionales a multibola/paleta grande.
