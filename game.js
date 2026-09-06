@@ -230,6 +230,7 @@ function hitBlock( block ) {
     spawnExplosion( block );
     spawnPowerUp( block );
     score += block.points;
+    playSound( breakSound );
   }
 }
 
