@@ -315,14 +315,19 @@ canvas.addEventListener( 'mousemove', handleMouseMove );
 canvas.addEventListener( 'click', handleCanvasClick );
 
 function updatePaddle() {
-  if ( mouseX !== null ) {
-    paddle.x = clampPaddleX( mouseX - paddle.width / 2 );
+  const usingKeyboard = keysPressed.left || keysPressed.right;
+  if ( usingKeyboard ) {
+    mouseX = null;
   }
+
   if ( keysPressed.left ) {
     paddle.x = clampPaddleX( paddle.x - paddle.speed );
   }
   if ( keysPressed.right ) {
     paddle.x = clampPaddleX( paddle.x + paddle.speed );
+  }
+  if ( !usingKeyboard && mouseX !== null ) {
+    paddle.x = clampPaddleX( mouseX - paddle.width / 2 );
   }
 }
 
