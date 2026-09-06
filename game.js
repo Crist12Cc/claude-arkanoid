@@ -38,12 +38,40 @@ function clampPaddleX( x ) {
   return Math.max( 0, Math.min( CANVAS_WIDTH - paddle.width, x ) );
 }
 
+const BALL_RADIUS = 8;
+const BALL_SPEED = 5;
+
+function createAttachedBall() {
+  return {
+    x: paddle.x + paddle.width / 2,
+    y: paddle.y - BALL_RADIUS,
+    dx: 0,
+    dy: 0,
+    radius: BALL_RADIUS,
+    attached: true,
+  };
+}
+
+const balls = [ createAttachedBall() ];
+
+function launchAttachedBalls() {
+  balls.forEach( ( ball ) => {
+    if ( ball.attached ) {
+      ball.attached = false;
+      ball.dx = 0;
+      ball.dy = -BALL_SPEED;
+    }
+  } );
+}
+
 function handleKeyDown( e ) {
   if ( e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' ) keysPressed.left = true;
   if ( e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' ) keysPressed.right = true;
 
   if ( gameState === 'START' ) {
     gameState = 'PLAYING';
+  } else if ( gameState === 'PLAYING' ) {
+    launchAttachedBalls();
   }
 }
 
@@ -60,6 +88,8 @@ function handleMouseMove( e ) {
 function handleCanvasClick() {
   if ( gameState === 'START' ) {
     gameState = 'PLAYING';
+  } else if ( gameState === 'PLAYING' ) {
+    launchAttachedBalls();
   }
 }
 
@@ -77,6 +107,60 @@ function updatePaddle() {
   }
   if ( keysPressed.right ) {
     paddle.x = clampPaddleX( paddle.x + paddle.speed );
+  }
+}
+
+function bounceBallOffPaddle( ball ) {
+  const hitPos = ( ball.x - paddle.x ) / paddle.width; // 0 (izquierda) .. 1 (derecha)
+  const clampedHitPos = Math.max( 0, Math.min( 1, hitPos ) );
+  const angle = ( clampedHitPos - 0.5 ) * ( Math.PI / 3 ) * 2; // -60° .. 60° desde vertical
+  const speed = Math.hypot( ball.dx, ball.dy ) || BALL_SPEED;
+
+  ball.dx = speed * Math.sin( angle );
+  ball.dy = -Math.abs( speed * Math.cos( angle ) );
+  ball.y = paddle.y - ball.radius;
+}
+
+function loseLife() {
+  lives -= 1;
+  balls.length = 0;
+  balls.push( createAttachedBall() );
+}
+
+function updateBalls() {
+  balls.forEach( ( ball ) => {
+    if ( ball.attached ) {
+      ball.x = paddle.x + paddle.width / 2;
+      ball.y = paddle.y - ball.radius;
+      return;
+    }
+
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    if ( ball.x - ball.radius <= 0 ) {
+      ball.x = ball.radius;
+      ball.dx = Math.abs( ball.dx );
+    } else if ( ball.x + ball.radius >= CANVAS_WIDTH ) {
+      ball.x = CANVAS_WIDTH - ball.radius;
+      ball.dx = -Math.abs( ball.dx );
+    }
+
+    if ( ball.y - ball.radius <= 0 ) {
+      ball.y = ball.radius;
+      ball.dy = Math.abs( ball.dy );
+    }
+
+    const withinPaddleX = ball.x + ball.radius >= paddle.x && ball.x - ball.radius <= paddle.x + paddle.width;
+    const withinPaddleY = ball.y + ball.radius >= paddle.y && ball.y + ball.radius <= paddle.y + paddle.height;
+    if ( ball.dy > 0 && withinPaddleX && withinPaddleY ) {
+      bounceBallOffPaddle( ball );
+    }
+  } );
+
+  const allFallen = balls.every( ( ball ) => !ball.attached && ball.y - ball.radius > CANVAS_HEIGHT );
+  if ( allFallen ) {
+    loseLife();
   }
 }
 
@@ -123,6 +207,9 @@ function drawPlayingPlaceholder() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT );
   drawSprite( ctx, 'paddle', paddle.x, paddle.y, paddle.width, paddle.height );
+  balls.forEach( ( ball ) => {
+    drawSprite( ctx, 'ball', ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2 );
+  } );
 }
 
 function drawPausedOverlay() {
@@ -159,7 +246,8 @@ function drawVictoryScreen() {
 function update( dt ) {
   if ( gameState === 'PLAYING' ) {
     updatePaddle();
-    // La lógica de bola/bloques se agrega en pasos siguientes.
+    updateBalls();
+    // La lógica de bloques se agrega en pasos siguientes.
   }
 }
 
