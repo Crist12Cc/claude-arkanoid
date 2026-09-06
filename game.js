@@ -271,7 +271,7 @@ function handleKeyDown( e ) {
     return;
   }
 
-  if ( e.key === 'p' || e.key === 'P' || e.key === 'Escape' ) {
+  if ( ( gameState === 'PLAYING' || gameState === 'PAUSED' ) && ( e.key === 'p' || e.key === 'P' || e.key === 'Escape' ) ) {
     togglePause();
     return;
   }
