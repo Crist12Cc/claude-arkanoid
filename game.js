@@ -14,6 +14,72 @@ let score = 0;
 let lives = 3;
 let bestScore = 0;
 
+const PADDLE_WIDTH = 80;
+const PADDLE_HEIGHT = 14;
+const PADDLE_Y = CANVAS_HEIGHT - 30;
+const PADDLE_SPEED = 6;
+
+const paddle = {
+  x: ( CANVAS_WIDTH - PADDLE_WIDTH ) / 2,
+  y: PADDLE_Y,
+  width: PADDLE_WIDTH,
+  height: PADDLE_HEIGHT,
+  speed: PADDLE_SPEED,
+};
+
+const keysPressed = {
+  left: false,
+  right: false,
+};
+
+let mouseX = null;
+
+function clampPaddleX( x ) {
+  return Math.max( 0, Math.min( CANVAS_WIDTH - paddle.width, x ) );
+}
+
+function handleKeyDown( e ) {
+  if ( e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' ) keysPressed.left = true;
+  if ( e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' ) keysPressed.right = true;
+
+  if ( gameState === 'START' ) {
+    gameState = 'PLAYING';
+  }
+}
+
+function handleKeyUp( e ) {
+  if ( e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' ) keysPressed.left = false;
+  if ( e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' ) keysPressed.right = false;
+}
+
+function handleMouseMove( e ) {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = ( e.clientX - rect.left ) * ( CANVAS_WIDTH / rect.width );
+}
+
+function handleCanvasClick() {
+  if ( gameState === 'START' ) {
+    gameState = 'PLAYING';
+  }
+}
+
+window.addEventListener( 'keydown', handleKeyDown );
+window.addEventListener( 'keyup', handleKeyUp );
+canvas.addEventListener( 'mousemove', handleMouseMove );
+canvas.addEventListener( 'click', handleCanvasClick );
+
+function updatePaddle() {
+  if ( mouseX !== null ) {
+    paddle.x = clampPaddleX( mouseX - paddle.width / 2 );
+  }
+  if ( keysPressed.left ) {
+    paddle.x = clampPaddleX( paddle.x - paddle.speed );
+  }
+  if ( keysPressed.right ) {
+    paddle.x = clampPaddleX( paddle.x + paddle.speed );
+  }
+}
+
 function loadBestScore() {
   try {
     const raw = localStorage.getItem( BEST_SCORE_KEY );
@@ -56,6 +122,7 @@ function drawStartScreen() {
 function drawPlayingPlaceholder() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT );
+  drawSprite( ctx, 'paddle', paddle.x, paddle.y, paddle.width, paddle.height );
 }
 
 function drawPausedOverlay() {
@@ -91,7 +158,8 @@ function drawVictoryScreen() {
 
 function update( dt ) {
   if ( gameState === 'PLAYING' ) {
-    // La lógica de paleta/bola/bloques se agrega en pasos siguientes.
+    updatePaddle();
+    // La lógica de bola/bloques se agrega en pasos siguientes.
   }
 }
 
