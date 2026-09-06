@@ -251,7 +251,26 @@ function togglePause() {
   }
 }
 
+function resetGame() {
+  blocks = createBlocks();
+  balls.length = 0;
+  balls.push( createAttachedBall() );
+  explosions.length = 0;
+  powerUps.length = 0;
+  activeEffects.bigPaddleUntil = null;
+  paddle.width = PADDLE_WIDTH;
+  paddle.x = clampPaddleX( ( CANVAS_WIDTH - PADDLE_WIDTH ) / 2 );
+  score = 0;
+  lives = 3;
+  gameState = 'START';
+}
+
 function handleKeyDown( e ) {
+  if ( gameState === 'GAME_OVER' || gameState === 'VICTORY' ) {
+    resetGame();
+    return;
+  }
+
   if ( e.key === 'p' || e.key === 'P' || e.key === 'Escape' ) {
     togglePause();
     return;
@@ -278,6 +297,11 @@ function handleMouseMove( e ) {
 }
 
 function handleCanvasClick() {
+  if ( gameState === 'GAME_OVER' || gameState === 'VICTORY' ) {
+    resetGame();
+    return;
+  }
+
   if ( gameState === 'START' ) {
     gameState = 'PLAYING';
   } else if ( gameState === 'PLAYING' ) {
@@ -462,6 +486,7 @@ function drawGameOverScreen() {
   ctx.fillText( 'GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20 );
   ctx.font = '16px monospace';
   ctx.fillText( `Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20 );
+  ctx.fillText( 'Presiona una tecla o haz click para reiniciar', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50 );
 }
 
 function drawVictoryScreen() {
@@ -473,6 +498,7 @@ function drawVictoryScreen() {
   ctx.fillText( 'VICTORIA', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 20 );
   ctx.font = '16px monospace';
   ctx.fillText( `Score: ${score}`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20 );
+  ctx.fillText( 'Presiona una tecla o haz click para reiniciar', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 50 );
 }
 
 function checkVictory() {
