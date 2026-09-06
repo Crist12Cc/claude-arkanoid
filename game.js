@@ -316,6 +316,7 @@ function togglePause() {
 }
 
 function resetGame() {
+  currentLevel = 0;
   blocks = createBlocks( LEVELS[ currentLevel ] );
   balls.length = 0;
   balls.push( createAttachedBall() );
