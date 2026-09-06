@@ -38,6 +38,55 @@ function clampPaddleX( x ) {
   return Math.max( 0, Math.min( CANVAS_WIDTH - paddle.width, x ) );
 }
 
+const BLOCK_COLS = 10;
+const BLOCK_ROWS = 7;
+const BLOCK_WIDTH = 44;
+const BLOCK_HEIGHT = 16;
+const BLOCK_GAP = 4;
+const BLOCK_MARGIN_X = ( CANVAS_WIDTH - ( BLOCK_COLS * BLOCK_WIDTH + ( BLOCK_COLS - 1 ) * BLOCK_GAP ) ) / 2;
+const BLOCK_MARGIN_TOP = 60;
+
+// Fila -> { hits, color }, según el mapeo de resistencia por color del spec.
+const BLOCK_ROW_CONFIG = [
+  { hits: 3, color: 'red' },
+  { hits: 3, color: 'hotpink' },
+  { hits: 2, color: 'yellow' },
+  { hits: 2, color: 'magenta' },
+  { hits: 1, color: 'gray' },
+  { hits: 1, color: 'cyan' },
+  { hits: 1, color: 'green' },
+];
+
+const POINTS_BY_HITS = { 1: 10, 2: 20, 3: 30 };
+
+function createBlocks() {
+  const created = [];
+  for ( let row = 0; row < BLOCK_ROWS; row++ ) {
+    const { hits, color } = BLOCK_ROW_CONFIG[ row ];
+    for ( let col = 0; col < BLOCK_COLS; col++ ) {
+      created.push( {
+        x: BLOCK_MARGIN_X + col * ( BLOCK_WIDTH + BLOCK_GAP ),
+        y: BLOCK_MARGIN_TOP + row * ( BLOCK_HEIGHT + BLOCK_GAP ),
+        width: BLOCK_WIDTH,
+        height: BLOCK_HEIGHT,
+        color,
+        hitsRemaining: hits,
+        destroyed: false,
+      } );
+    }
+  }
+  return created;
+}
+
+let blocks = createBlocks();
+
+function drawBlocks() {
+  blocks.forEach( ( block ) => {
+    if ( block.destroyed ) return;
+    drawSprite( ctx, `block_${block.color}`, block.x, block.y, block.width, block.height );
+  } );
+}
+
 const BALL_RADIUS = 8;
 const BALL_SPEED = 5;
 
@@ -206,6 +255,7 @@ function drawStartScreen() {
 function drawPlayingPlaceholder() {
   ctx.fillStyle = '#000';
   ctx.fillRect( 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT );
+  drawBlocks();
   drawSprite( ctx, 'paddle', paddle.x, paddle.y, paddle.width, paddle.height );
   balls.forEach( ( ball ) => {
     drawSprite( ctx, 'ball', ball.x - ball.radius, ball.y - ball.radius, ball.radius * 2, ball.radius * 2 );
