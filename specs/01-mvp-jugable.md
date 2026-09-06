@@ -1,6 +1,6 @@
 # 01 — MVP jugable de Arkanoid
 
-**Estado:** Approved
+**Estado:** Implementado
 **Depende de:** Ninguno
 **Fecha:** 2026-09-06
 **Objetivo:** Construir un MVP jugable de Arkanoid en HTML/CSS/JS puro (sin dependencias) con un nivel fijo, vidas, power-ups básicos y controles de teclado y mouse.
