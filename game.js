@@ -210,9 +210,10 @@ function createBlocks( levelGrid ) {
   const created = [];
   for ( let row = 0; row < BLOCK_ROWS; row++ ) {
     for ( let col = 0; col < BLOCK_COLS; col++ ) {
-      const color = levelGrid[ row ][ col ];
-      if ( color === null ) continue;
+      const color = levelGrid[ row ]?.[ col ];
+      if ( color == null ) continue;
       const hits = HITS_BY_COLOR[ color ];
+      if ( hits === undefined ) continue;
       created.push( {
         x: BLOCK_MARGIN_X + col * ( BLOCK_WIDTH + BLOCK_GAP ),
         y: BLOCK_MARGIN_TOP + row * ( BLOCK_HEIGHT + BLOCK_GAP ),
